@@ -25,51 +25,76 @@ void Sim::poll_events() {
     while (std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
             window.close();
-        }
-        else if (event->is<sf::Event::MouseButtonPressed>()) {
-            is_mouse_clicked = true;
-            mouse_click_pos = sf::Mouse::getPosition(window);
-        }
-        else if (is_mouse_clicked && event->is<sf::Event::MouseMoved>()) {
-            mouse_click_pos = sf::Mouse::getPosition(window);
-        }
-        else if (event->is<sf::Event::MouseButtonReleased>()) {
-            is_mouse_clicked = false;
+        } else if (event->is<sf::Event::MouseButtonPressed>()) {
+            is_mouse_held = true;
+        } else if (event->is<sf::Event::MouseButtonReleased>()) {
+            is_mouse_held = false;
         }
     }
 }
 
 // --- Sim Updates --- //
 void Sim::update() {
-    int offset[] = { -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5 };
-    grid.update_grid();
-    cells.clear();
-    if (is_mouse_clicked) {
-        for (size_t i = 0; i < 11; i++) {
-            for (size_t j = 0; j < 11; j++) {
-                grid.spawn(mouse_click_pos.x + offset[i], mouse_click_pos.y + offset[j], CellType::SAND);
+    if (is_mouse_held) { 
+        mouse_pos = sf::Mouse::getPosition(window);
+        grid.spawn(
+            mouse_pos.y / consts::CELL_SIZE,
+            mouse_pos.x / consts::CELL_SIZE,
+            CellType::WATER
+        );
+        grid.spawn(
+            (mouse_pos.y / consts::CELL_SIZE) - 1,
+            mouse_pos.x / consts::CELL_SIZE,
+            CellType::WATER
+        );
+        grid.spawn(
+            (mouse_pos.y / consts::CELL_SIZE) + 1,
+            mouse_pos.x / consts::CELL_SIZE,
+            CellType::WATER
+        );
+        grid.spawn(
+            mouse_pos.y / consts::CELL_SIZE,
+            (mouse_pos.x / consts::CELL_SIZE) - 1,
+            CellType::WATER
+        );
+        grid.spawn(
+            mouse_pos.y / consts::CELL_SIZE,
+            (mouse_pos.x / consts::CELL_SIZE) + 1,
+            CellType::WATER
+        );
+    }
+
+    grid.update();
+}
+
+void Sim::render_grid() {
+    sf::RectangleShape rs {
+        sf::Vector2f {
+            static_cast<float>(consts::CELL_SIZE),
+            static_cast<float>(consts::CELL_SIZE) 
+        }
+    };
+
+    for (int i = 0; i < grid.cells.size(); ++i) {
+        for (int j = 0; j < grid.cells[i].size(); ++j) {
+            if (grid.cells[i][j] == CellType::WATER) {
+                rs.setFillColor(sf::Color{ 0, 0, 128 });
+                rs.setPosition(
+                    sf::Vector2f {
+                        static_cast<float>(consts::CELL_SIZE * j),
+                        static_cast<float>(consts::CELL_SIZE * i)
+                    }
+                );
+                window.draw(rs);
             }
         }
     }
-    for (size_t i = 0; i < grid.cells.size(); ++i) {
-        for (size_t j = 0; j < grid.cells[i].size(); ++j) {
-            if (grid.cells[i][j] == CellType::SAND) {
-                sf::RectangleShape rs { sf::Vector2f { 1.f, 1.f }};
-                rs.setFillColor(sf::Color::Yellow);
-                rs.setPosition(sf::Vector2f { static_cast<float>(i), static_cast<float>(j) });
-                cells.push_back(rs);
-            }
-        }
-    }
-    
 }
 
 // --- Sim Renders --- //
 void Sim::render() {
     window.clear(sf::Color::Black);
-    for (auto& rs : cells) {
-        window.draw(rs);
-    }
+    render_grid();
     window.display();
 }
 

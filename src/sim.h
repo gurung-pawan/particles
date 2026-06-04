@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
-#include <vector>
 
 #include "grid.h"
 
@@ -10,19 +9,19 @@ class Sim {
 private:
     sf::RenderWindow window;
     sf::Clock clock;
-    sf::Vector2i mouse_click_pos {};
-    bool is_mouse_clicked {};
+    Grid grid;
 
-    std::vector<sf::RectangleShape> cells {};
+    sf::Vector2i mouse_pos;
 
     float delta_t{};
-    Grid grid;
+    bool is_mouse_held{};
 
     void init_window();
 
     void poll_events();
     void update();
     void render();
+    void render_grid();
 public:
     Sim();
 

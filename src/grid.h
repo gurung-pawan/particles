@@ -1,25 +1,31 @@
 #pragma once
+#include <cstdint>
 #include <array>
-#include <expected>
 
 #include "constants.h"
 
-enum class CellType : int { EMPTY, SAND, WATER, STONE };
+enum class CellType : std::uint8_t {
+    EMPTY = 0, SAND, WATER
+};
 
 struct Grid {
-    std::array<std::array<CellType, consts::HEIGHT>, consts::WIDTH> cells{};
-    std::array<std::array<bool, consts::HEIGHT>, consts::WIDTH> updated_cells{};
+    static constexpr int width { consts::WIDTH / consts::CELL_SIZE };
+    static constexpr int height { consts::HEIGHT / consts::CELL_SIZE };
 
-    inline bool is_in_bound(int x, int y) const {
-        return x >= 0 && x < consts::WIDTH && y >= 0 && y < consts::HEIGHT; 
-    }
+    std::array<std::array<CellType, width>, height> cells{};
 
-    inline bool is_empty(int x, int y) const { return is_in_bound(x, y) && cells[x][y] == CellType::EMPTY; }
-    bool move_cell(int sx, int sy, int dx, int dy);
+    [[nodiscard]]
+    inline bool in_bound(int y, int x) const { return y >= 0 && y < height && x >= 0 && x < width; }
+    
+    [[nodiscard]]
+    inline bool is_empty(int y, int x) const { return cells[y][x] == CellType::EMPTY; }
 
-    void update_grid();
-    bool spawn(int x, int y, CellType cell_type);
+    void update();
+    void spawn(int y, int x, CellType cell_type);
 private:
-    void update_sand(int x, int y);
-    void update_water(int x, int y);
+    bool update_generic_down(int y, int x);
+    bool update_generic_side(int y, int x);
+    void update_sand(int y, int x);
+    void update_water(int y, int x);
+    void move(int sy, int sx, int dy, int dx);
 };

@@ -12,7 +12,7 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(particles src/main.cpp src/sim.cpp src/grid.cpp)
+add_executable(particles src/main.cpp src/sim.cpp src/grid.cpp src/utils.cpp)
 
 target_compile_features(particles PRIVATE cxx_std_23)
 target_link_libraries(particles PRIVATE SFML::Graphics SFML::Window)

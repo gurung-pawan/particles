@@ -1,45 +1,70 @@
 #include "grid.h"
+#include "utils.h"
 
-#include <print>
-bool Grid::move_cell(int sx, int sy, int dx, int dy) {
-    if (!is_in_bound(sx, sy) || !is_in_bound(dx, dy)) return false;
+void Grid::move(int sy, int sx, int dy, int dx) {
+    cells[dy][dx] = cells[sy][sx];
+    cells[sy][sx] = CellType::EMPTY;
+}
+
+bool Grid::update_generic_down(int y, int x) {
+    const int dwn = y + 1;
     
-    cells[dx][dy] = cells[sx][sy];
-    cells[sx][sy] = CellType::EMPTY;
-    updated_cells[dx][dy] = true;
-    return true;
-}
-
-void Grid::update_sand(int x, int y) {
-    int down = y + 1;
-    if (is_empty(x, down) && move_cell(x, y, x, down)) return;
-    if (is_empty(x - 1, down) && move_cell(x, y, x - 1, down)) return;
-    if (is_empty(x + 1, down) && move_cell(x, y, x + 1, down)) return;
-}
-
-void Grid::update_water(int x, int y) {
-    // to do
-}
-
-bool Grid::spawn(int x, int y, CellType cell_type) {
-    if (!is_in_bound(x, y) && !is_empty(x, y)) return false;
-    cells[x][y] = cell_type;
-    return true;
-}
-
-void Grid::update_grid() {
-    for (auto& col : updated_cells) {
-        col.fill(false);
+    if (in_bound(dwn, x) && is_empty(dwn, x)) { 
+        move(y, x, dwn, x);
+        return true;
     }
 
-    for (int i = consts::WIDTH - 1; i >= 0; --i) {
-        for (int j = consts::HEIGHT - 2; j >= 0; --j) {
-            if (updated_cells[i][j]) continue;
+    bool mv_ld { in_bound(dwn, x - 1) && is_empty(dwn, x - 1) };
+    bool mv_rd { in_bound(dwn, x + 1) && is_empty(dwn, x + 1) };
 
+    if (mv_ld && mv_rd) {
+        int dir = (2 * utils::get_random_int(0, 1)) - 1;
+        move(y, x, dwn, x + dir);
+    }
+    else if (mv_ld) move(y, x, dwn, x - 1);
+    else if (mv_rd) move(y, x, dwn, x + 1);
+
+    return mv_ld || mv_rd;
+}
+
+bool Grid::update_generic_side(int y, int x) {
+    bool mv_l = { in_bound(y, x - 1) && is_empty(y, x - 1) };
+    bool mv_r = { in_bound(y, x + 1) && is_empty(y, x + 1) };
+
+    if (mv_l && mv_r) {
+        int dir = (2 * utils::get_random_int(0, 1)) - 1;
+        move(y, x, y, x + dir);
+    }
+    else if (mv_l) move(y, x, y, x - 1);
+    else if (mv_r) move(y, x, y, x + 1);
+
+    return mv_l || mv_r;
+}
+
+void Grid::update_sand(int y, int x) {
+    update_generic_down(y, x);
+}
+
+void Grid::update_water(int y, int x) {
+    if (update_generic_down(y, x)) return;
+    if (update_generic_side(y, x)) return;
+}
+
+void Grid::update() {
+
+    for (int i = height - 2; i >= 0; --i) {
+        for (int j = width - 1; j >= 0; --j) {
+            if (is_empty(i, j)) continue;
+            
             switch (cells[i][j]) {
                 case CellType::SAND: update_sand(i, j); break;
                 case CellType::WATER: update_water(i, j); break;
             }
         }
     }
+}
+
+void Grid::spawn(int y, int x, CellType cell_type) {
+    if (!in_bound(y, x) || !is_empty(y, x)) return;
+    cells[y][x] = cell_type; 
 }
