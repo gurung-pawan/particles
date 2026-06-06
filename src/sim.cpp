@@ -2,12 +2,19 @@
 #include <print>
 
 #include <SFML/Graphics.hpp>
+#include <imgui-SFML.h>
+#include <imgui.h>
 
 #include "sim.h"
 #include "constants.h"
 
 Sim::Sim() {
     init_window();
+    if (!ImGui::SFML::Init(window)) exit(EXIT_FAILURE);
+}
+
+Sim::~Sim() {
+    ImGui::SFML::Shutdown();
 }
 
 // --- Initializers --- //
@@ -23,44 +30,51 @@ void Sim::init_window() {
 // --- Sim Events --- //
 void Sim::poll_events() {
     while (std::optional event = window.pollEvent()) {
+
+        ImGui::SFML::ProcessEvent(window, *event);
         if (event->is<sf::Event::Closed>()) {
             window.close();
         } else if (event->is<sf::Event::MouseButtonPressed>()) {
-            is_mouse_held = true;
+            if (!ImGui::GetIO().WantCaptureMouse)
+                is_mouse_held = true;
         } else if (event->is<sf::Event::MouseButtonReleased>()) {
-            is_mouse_held = false;
+            if (!ImGui::GetIO().WantCaptureMouse)
+                is_mouse_held = false;
         }
     }
 }
 
+// --- ImGui --- //
+void Sim::im_gui_update() {
+    ImGui::SFML::Update(window, clock.restart());
+
+    ImGui::SetNextWindowPos(ImVec2(consts::WIDTH - consts::PANEL_WIDTH, 0));
+    ImGui::SetNextWindowSize(ImVec2(consts::PANEL_WIDTH, consts::HEIGHT));
+    ImGui::Begin("Options", nullptr, 
+        ImGuiWindowFlags_NoMove | 
+        ImGuiWindowFlags_NoResize | 
+        ImGuiWindowFlags_NoCollapse
+    );
+
+    ImGui::Text("Materials");
+    if (ImGui::RadioButton("Water", selected_type == CellType::WATER))
+        selected_type = CellType::WATER;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Sand", selected_type == CellType::SAND))
+        selected_type = CellType::SAND;
+    ImGui::End();
+}
+
 // --- Sim Updates --- //
 void Sim::update() {
+    im_gui_update();
+
     if (is_mouse_held) { 
         mouse_pos = sf::Mouse::getPosition(window);
         grid.spawn(
             mouse_pos.y / consts::CELL_SIZE,
             mouse_pos.x / consts::CELL_SIZE,
-            CellType::WATER
-        );
-        grid.spawn(
-            (mouse_pos.y / consts::CELL_SIZE) - 1,
-            mouse_pos.x / consts::CELL_SIZE,
-            CellType::WATER
-        );
-        grid.spawn(
-            (mouse_pos.y / consts::CELL_SIZE) + 1,
-            mouse_pos.x / consts::CELL_SIZE,
-            CellType::WATER
-        );
-        grid.spawn(
-            mouse_pos.y / consts::CELL_SIZE,
-            (mouse_pos.x / consts::CELL_SIZE) - 1,
-            CellType::WATER
-        );
-        grid.spawn(
-            mouse_pos.y / consts::CELL_SIZE,
-            (mouse_pos.x / consts::CELL_SIZE) + 1,
-            CellType::WATER
+            selected_type
         );
     }
 
@@ -77,14 +91,19 @@ void Sim::render_grid() {
 
     for (int i = 0; i < grid.cells.size(); ++i) {
         for (int j = 0; j < grid.cells[i].size(); ++j) {
-            if (grid.cells[i][j] == CellType::WATER) {
-                rs.setFillColor(sf::Color{ 0, 0, 128 });
-                rs.setPosition(
-                    sf::Vector2f {
-                        static_cast<float>(consts::CELL_SIZE * j),
-                        static_cast<float>(consts::CELL_SIZE * i)
-                    }
-                );
+            rs.setPosition(
+                sf::Vector2f {
+                    static_cast<float>(consts::CELL_SIZE * j),
+                    static_cast<float>(consts::CELL_SIZE * i)
+                }
+            );
+
+            switch (grid.cells[i][j]) {
+                case CellType::WATER: rs.setFillColor(sf::Color{ 0, 0, 128 }); break;
+                case CellType::SAND: rs.setFillColor(sf::Color{ 194, 178, 128 }); break;
+            }
+
+            if (grid.cells[i][j] != CellType::EMPTY) {
                 window.draw(rs);
             }
         }
@@ -95,13 +114,13 @@ void Sim::render_grid() {
 void Sim::render() {
     window.clear(sf::Color::Black);
     render_grid();
+    ImGui::SFML::Render(window);
     window.display();
 }
 
 // --- Sim entry point --- //
 void Sim::run() {
     while (window.isOpen()) {
-        delta_t = clock.restart().asSeconds();
         poll_events();
         update();
         render();

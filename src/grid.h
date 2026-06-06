@@ -9,7 +9,7 @@ enum class CellType : std::uint8_t {
 };
 
 struct Grid {
-    static constexpr int width { consts::WIDTH / consts::CELL_SIZE };
+    static constexpr int width { (consts::WIDTH - consts::PANEL_WIDTH) / consts::CELL_SIZE };
     static constexpr int height { consts::HEIGHT / consts::CELL_SIZE };
 
     std::array<std::array<CellType, width>, height> cells{};
