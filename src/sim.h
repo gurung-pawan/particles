@@ -23,6 +23,7 @@ private:
     void im_gui_update();
     void render();
     void render_grid();
+    void clear_grid();
 public:
     Sim();
     ~Sim();

@@ -5,7 +5,7 @@
 #include "constants.h"
 
 enum class CellType : std::uint8_t {
-    EMPTY = 0, SAND, WATER
+    EMPTY = 0, SAND, WATER, STONE
 };
 
 struct Grid {
@@ -22,6 +22,7 @@ struct Grid {
 
     void update();
     void spawn(int y, int x, CellType cell_type);
+    void clear();
 private:
     bool update_generic_down(int y, int x);
     bool update_generic_sink(int y, int x);

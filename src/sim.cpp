@@ -62,6 +62,14 @@ void Sim::im_gui_update() {
     ImGui::SameLine();
     if (ImGui::RadioButton("Sand", selected_type == CellType::SAND))
         selected_type = CellType::SAND;
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Stone", selected_type == CellType::STONE))
+        selected_type = CellType::STONE;
+
+    ImGui::Spacing();
+    if (ImGui::Button("Clear")) {
+        clear_grid();
+    }
     ImGui::End();
 }
 
@@ -79,6 +87,11 @@ void Sim::update() {
     }
 
     grid.update();
+}
+
+
+void Sim::clear_grid() {
+    grid.clear();
 }
 
 void Sim::render_grid() {
@@ -101,6 +114,7 @@ void Sim::render_grid() {
             switch (grid.cells[i][j]) {
                 case CellType::WATER: rs.setFillColor(sf::Color{ 0, 0, 128 }); break;
                 case CellType::SAND: rs.setFillColor(sf::Color{ 194, 178, 128 }); break;
+                case CellType::STONE: rs.setFillColor(sf::Color{ 64, 64, 64 }); break;
             }
 
             if (grid.cells[i][j] != CellType::EMPTY) {

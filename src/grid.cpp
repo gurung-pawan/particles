@@ -17,9 +17,13 @@ void Grid::swap(int sy, int sx, int dy, int dx) {
 bool Grid::update_generic_down(int y, int x) {
     const int dwn { y + 1 };
     
-    if (in_bound(dwn, x) && is_empty(dwn, x)) { 
-        move(y, x, dwn, x);
-        return true;
+    if (in_bound(dwn, x)) { 
+        if (is_empty(dwn, x)) {
+            move(y, x, dwn, x);
+            return true;
+        } else if (cells[dwn][x] == CellType::STONE) {
+            return false;
+        }
     }
 
     bool mv_ld { in_bound(dwn, x - 1) && is_empty(dwn, x - 1) };
@@ -96,4 +100,10 @@ void Grid::update() {
 void Grid::spawn(int y, int x, CellType cell_type) {
     if (!in_bound(y, x) || !is_empty(y, x)) return;
     cells[y][x] = cell_type; 
+}
+
+void Grid::clear() {
+    for (auto& row : cells) {
+        row.fill(CellType::EMPTY);
+    }
 }
