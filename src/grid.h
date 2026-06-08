@@ -24,8 +24,10 @@ struct Grid {
     void spawn(int y, int x, CellType cell_type);
 private:
     bool update_generic_down(int y, int x);
+    bool update_generic_sink(int y, int x);
     bool update_generic_side(int y, int x);
     void update_sand(int y, int x);
     void update_water(int y, int x);
     void move(int sy, int sx, int dy, int dx);
+    void swap(int sy, int sx, int dy, int dx);
 };
