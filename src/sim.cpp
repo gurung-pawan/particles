@@ -1,5 +1,6 @@
 #include <optional>
 #include <print>
+#include <ranges>
 
 #include <SFML/Graphics.hpp>
 #include <imgui-SFML.h>
@@ -57,18 +58,20 @@ void Sim::im_gui_update() {
     );
 
     ImGui::Text("Materials");
-    if (ImGui::RadioButton("Water", selected_type == CellType::WATER))
-        selected_type = CellType::WATER;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Sand", selected_type == CellType::SAND))
-        selected_type = CellType::SAND;
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Stone", selected_type == CellType::STONE))
-        selected_type = CellType::STONE;
+    for (auto& [cell, name] : materials) {
+        if (ImGui::RadioButton(name, selected_type == cell))
+            selected_type = cell;
+        ImGui::SameLine();
+    }
+    ImGui::NewLine();
 
     ImGui::Spacing();
     if (ImGui::Button("Clear")) {
         clear_grid();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(paused ? "Play" : "Pause")) {
+        paused = !paused;
     }
     ImGui::End();
 }
@@ -86,7 +89,7 @@ void Sim::update() {
         );
     }
 
-    grid.update();
+    if (!paused) grid.update();
 }
 
 

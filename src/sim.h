@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
@@ -7,13 +8,19 @@
 
 class Sim {
 private:
+    static constexpr std::array materials = {
+        std::pair{ CellType::SAND, "Sand" },
+        std::pair{ CellType::WATER, "Water" },
+        std::pair{ CellType::STONE, "Stone" },
+        std::pair{ CellType::EMPTY, "Eraser" }
+    };
     sf::RenderWindow window;
     sf::Clock clock;
     Grid grid;
 
     sf::Vector2i mouse_pos;
 
-    bool is_mouse_held{};
+    bool is_mouse_held{}, paused{};
     CellType selected_type { CellType::SAND };
 
     void init_window();

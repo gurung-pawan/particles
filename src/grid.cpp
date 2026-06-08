@@ -98,7 +98,8 @@ void Grid::update() {
 }
 
 void Grid::spawn(int y, int x, CellType cell_type) {
-    if (!in_bound(y, x) || !is_empty(y, x)) return;
+    if (!in_bound(y, x)) return;
+    if (!is_empty(y, x) && cell_type != CellType::EMPTY) return;
     cells[y][x] = cell_type; 
 }
 
