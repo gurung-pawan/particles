@@ -1,6 +1,4 @@
 #include <optional>
-#include <print>
-#include <ranges>
 
 #include <SFML/Graphics.hpp>
 #include <imgui-SFML.h>
@@ -56,7 +54,7 @@ void Sim::im_gui_update() {
         ImGuiWindowFlags_NoResize | 
         ImGuiWindowFlags_NoCollapse
     );
-
+    // Material Selection
     ImGui::Text("Materials");
     for (auto& [cell, name] : materials) {
         if (ImGui::RadioButton(name, selected_type == cell))
@@ -65,6 +63,7 @@ void Sim::im_gui_update() {
     }
     ImGui::NewLine();
 
+    // Control buttons
     ImGui::Spacing();
     if (ImGui::Button("Clear")) {
         clear_grid();
@@ -73,25 +72,40 @@ void Sim::im_gui_update() {
     if (ImGui::Button(paused ? "Play" : "Pause")) {
         paused = !paused;
     }
+
+    // Brush options
+    ImGui::Spacing();
+    ImGui::SliderInt("Brush Size", &brush_size, 0, 4);
+
     ImGui::End();
+}
+
+void Sim::spawn_from_brush() {
+    mouse_pos = sf::Mouse::getPosition(window);
+
+    int cy { mouse_pos.y / static_cast<int>(consts::CELL_SIZE) };
+    int cx { mouse_pos.x / static_cast<int>(consts::CELL_SIZE) };
+    int r { brush_size };
+
+    // Spawning in the circle all points (x, y) | (x - cx)^2 + (y - cy)^2 <= r^2
+    // lower and upper bound are (center - radius) and (center + radius) respectively
+ 
+    for (int x = (cx - r); x <= (cx + r); ++x) {
+        for (int y = (cy - r); y <= (cy + r); ++y) {
+            int px { x - cx }, py { y - cy };
+            if (px * px + py * py <= r * r) {
+                grid.spawn(y, x, selected_type);
+            }
+        }
+    }
 }
 
 // --- Sim Updates --- //
 void Sim::update() {
     im_gui_update();
-
-    if (is_mouse_held) { 
-        mouse_pos = sf::Mouse::getPosition(window);
-        grid.spawn(
-            mouse_pos.y / consts::CELL_SIZE,
-            mouse_pos.x / consts::CELL_SIZE,
-            selected_type
-        );
-    }
-
+    if (is_mouse_held) spawn_from_brush();
     if (!paused) grid.update();
 }
-
 
 void Sim::clear_grid() {
     grid.clear();

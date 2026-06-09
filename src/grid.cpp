@@ -1,8 +1,6 @@
 #include "grid.h"
 #include "utils.h"
 
-#include <vector>
-
 void Grid::move(int sy, int sx, int dy, int dx) {
     cells[dy][dx] = cells[sy][sx];
     cells[sy][sx] = CellType::EMPTY;

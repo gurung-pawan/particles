@@ -21,6 +21,7 @@ private:
     sf::Vector2i mouse_pos;
 
     bool is_mouse_held{}, paused{};
+    int brush_size{ 1 };
     CellType selected_type { CellType::SAND };
 
     void init_window();
@@ -28,6 +29,8 @@ private:
     void poll_events();
     void update();
     void im_gui_update();
+    void spawn_from_brush();
+
     void render();
     void render_grid();
     void clear_grid();
