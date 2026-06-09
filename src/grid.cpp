@@ -84,12 +84,16 @@ void Grid::update_water(int y, int x) {
 void Grid::update() {
 
     for (int i = height - 2; i >= 0; --i) {
-        for (int j = width - 1; j >= 0; --j) {
-            if (is_empty(i, j)) continue;
+        bool is_rtl = utils::get_random_int(0, 1);
 
-            switch (cells[i][j]) {
-                case CellType::SAND: update_sand(i, j); break;
-                case CellType::WATER: update_water(i, j); break;
+        for (int j = 0; j < width; ++j) {
+            int x = j;
+            if (!is_rtl) x = width - j - 1; // to randomize the direction, to not create a bias 
+            if (is_empty(i, x)) continue;
+
+            switch (cells[i][x]) {
+                case CellType::SAND: update_sand(i, x); break;
+                case CellType::WATER: update_water(i, x); break;
             }
         }
     }

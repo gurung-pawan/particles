@@ -22,15 +22,18 @@ private:
 
     bool is_mouse_held{}, paused{};
     int brush_size{ 1 };
+    sf::CircleShape brush;
+
     CellType selected_type { CellType::SAND };
 
     void init_window();
 
     void poll_events();
-    void update();
     void im_gui_update();
     void spawn_from_brush();
-
+    void update_brush();
+    void update();
+    
     void render();
     void render_grid();
     void clear_grid();

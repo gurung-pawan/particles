@@ -10,6 +10,13 @@
 Sim::Sim() {
     init_window();
     if (!ImGui::SFML::Init(window)) exit(EXIT_FAILURE);
+    brush.setRadius(brush_size * consts::CELL_SIZE);
+    brush.setFillColor(sf::Color::Transparent);
+    brush.setOutlineColor(sf::Color{ 128, 128, 128 });
+    brush.setOutlineThickness(2.f);
+    brush.setOrigin(sf::Vector2f(
+        static_cast<float>(brush_size * consts::CELL_SIZE), static_cast<float>(brush_size * consts::CELL_SIZE)
+    ));
 }
 
 Sim::~Sim() {
@@ -81,8 +88,6 @@ void Sim::im_gui_update() {
 }
 
 void Sim::spawn_from_brush() {
-    mouse_pos = sf::Mouse::getPosition(window);
-
     int cy { mouse_pos.y / static_cast<int>(consts::CELL_SIZE) };
     int cx { mouse_pos.x / static_cast<int>(consts::CELL_SIZE) };
     int r { brush_size };
@@ -100,9 +105,26 @@ void Sim::spawn_from_brush() {
     }
 }
 
+void Sim::update_brush() {
+    brush.setPosition(
+        sf::Vector2f {
+            static_cast<float>(mouse_pos.x),
+            static_cast<float>(mouse_pos.y)
+        }
+    );
+    if (brush.getRadius() != brush_size) {
+        brush.setRadius(brush_size * consts::CELL_SIZE);
+        brush.setOrigin(sf::Vector2f(
+            static_cast<float>(brush_size * consts::CELL_SIZE), static_cast<float>(brush_size * consts::CELL_SIZE)
+        ));
+    }
+}
+
 // --- Sim Updates --- //
 void Sim::update() {
     im_gui_update();
+    mouse_pos = sf::Mouse::getPosition(window);
+    update_brush();
     if (is_mouse_held) spawn_from_brush();
     if (!paused) grid.update();
 }
@@ -145,6 +167,7 @@ void Sim::render_grid() {
 void Sim::render() {
     window.clear(sf::Color::Black);
     render_grid();
+    window.draw(brush);
     ImGui::SFML::Render(window);
     window.display();
 }
