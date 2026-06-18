@@ -10,7 +10,7 @@ A cellular automaton sandbox built in C++ with SFML and ImGui. Sand, water, and 
 - Multiple material types: sand, water, stone
 - Materials interact physically — water flows around stone, sand settles and cascades, sand submerged under water has a tendency to slide and resettle
 - Adjustable brush size for placing material
-- Simulation time controls: pause, play, step
+- Simulation time controls: pause, play
 - ImGui-based control panel
 
 ## Controls
